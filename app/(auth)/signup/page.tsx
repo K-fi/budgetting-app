@@ -2,16 +2,17 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
 export default function SignupPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [done, setDone] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -19,11 +20,7 @@ export default function SignupPage() {
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${window.location.origin}/onboarding` },
-    })
+    const { error } = await supabase.auth.signUp({ email, password })
 
     if (error) {
       setError(error.message)
@@ -31,29 +28,8 @@ export default function SignupPage() {
       return
     }
 
-    setDone(true)
-  }
-
-  if (done) {
-    return (
-      <div className="text-center flex flex-col items-center gap-4">
-        <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
-          <svg className="h-7 w-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Check your email</h2>
-          <p className="text-sm text-gray-500 mt-2">
-            We sent a confirmation link to <strong>{email}</strong>.
-            Click it to activate your account.
-          </p>
-        </div>
-        <Link href="/login" className="text-sm font-medium text-violet-600 hover:text-violet-700">
-          Back to sign in
-        </Link>
-      </div>
-    )
+    router.push('/onboarding')
+    router.refresh()
   }
 
   return (
